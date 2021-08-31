@@ -65,6 +65,12 @@
 * luci-compat(Luci-19.07)
 * ip6tables-mod-nat(ipv6)
 
+```
+opkg update
+opkg install luci luci-base iptables coreutils coreutils-nohup bash curl ca-certificates ipset ip-full iptables-mod-tproxy iptables-mod-extra libcap libcap-bin ruby ruby-yaml 
+opkg install dnsmasq-full --force-overwrite
+opkg install kmod-tun luci-compat ip6tables-mod-nat 
+```
 
 编译
 ---
