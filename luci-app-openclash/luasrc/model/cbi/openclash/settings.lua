@@ -41,7 +41,6 @@ s:tab("chnr_update", translate("Chnroute Update"))
 s:tab("auto_restart", translate("Auto Restart"))
 s:tab("version_update", translate("Version Update"))
 s:tab("debug", translate("Debug Logs"))
-s:tab("dlercloud", translate("Dler Cloud"))
 
 o = s:taboption("op_mode", ListValue, "en_mode", font_red..bold_on..translate("Select Mode")..bold_off..font_off)
 o.description = translate("Select Mode For OpenClash Work, Try Flush DNS Cache If Network Error")
@@ -596,54 +595,6 @@ core_update.template = "openclash/update"
 ---- debug
 o = s:taboption("debug", DummyValue, "", nil)
 o.template = "openclash/debug"
-
----- dlercloud
-o = s:taboption("dlercloud", Value, "dler_email")
-o.title = translate("Account Email Address")
-o.rmempty = true
-
-o = s:taboption("dlercloud", Value, "dler_passwd")
-o.title = translate("Account Password")
-o.password = true
-o.rmempty = true
-
-if m.uci:get("openclash", "config", "dler_token") then
-	o = s:taboption("dlercloud", Flag, "dler_checkin")
-	o.title = translate("Checkin")
-	o.default=0
-	o.rmempty = true
-end
-
-o = s:taboption("dlercloud", Value, "dler_checkin_interval")
-o.title = translate("Checkin Interval (hour)")
-o:depends("dler_checkin", "1")
-o.default=1
-o.rmempty = true
-
-o = s:taboption("dlercloud", Value, "dler_checkin_multiple")
-o.title = translate("Checkin Multiple")
-o.datatype = "uinteger"
-o.default=1
-o:depends("dler_checkin", "1")
-o.rmempty = true
-o.description = font_green..bold_on..translate("Multiple Must Be a Positive Integer and No More Than 50")..bold_off..font_off
-function o.validate(self, value)
-	if tonumber(value) < 1 then
-		return "1"
-	end
-	if tonumber(value) > 50 then
-		return "50"
-	end
-	return value
-end
-
-o = s:taboption("dlercloud", DummyValue, "dler_login", translate("Account Login"))
-o.template = "openclash/dler_login"
-if m.uci:get("openclash", "config", "dler_token") then
-	o.value = font_green..bold_on..translate("Account logged in")..bold_off..font_off
-else
-	o.value = font_red..bold_on..translate("Account not logged in")..bold_off..font_off
-end
 
 -- [[ Edit Server ]] --
 s = m:section(TypedSection, "dns_servers", translate("Add Custom DNS Servers")..translate("(Take Effect After Choose Above)"))

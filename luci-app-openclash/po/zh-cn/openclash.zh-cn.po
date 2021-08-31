@@ -2123,12 +2123,6 @@ msgstr "套餐流量"
 msgid "Checkin"
 msgstr "试试手气"
 
-msgid "Dler Cloud Account Login Failed! Please Check And Try Again..."
-msgstr "Dler Cloud 账户登录失败！请检查账户信息并重试..."
-
-msgid "Dler Cloud Checkin Failed! Please Check And Try Again..."
-msgstr "Dler Cloud 签到失败，请稍后再试！"
-
 msgid "Account Email Address"
 msgstr "账号地址"
 
@@ -2143,12 +2137,6 @@ msgstr "签到倍数"
 
 msgid "Multiple Must Be a Positive Integer and No More Than 50"
 msgstr "倍数必须是正整数且不大于50"
-
-msgid "Dler Cloud Checkin Successful, Result:"
-msgstr "Dler Cloud 签到成功，结果："
-
-msgid "Dler Cloud Checkin Failed, Result:"
-msgstr "Dler Cloud 签到失败，结果："
 
 msgid "Downloading Rule..."
 msgstr "正在下载规则..."
@@ -2174,20 +2162,8 @@ msgstr "规则项目:"
 msgid "Login..."
 msgstr "登录中..."
 
-msgid "Dler Cloud Login Successful"
-msgstr "Dler Cloud 登录成功"
-
-msgid "Dler Cloud Login Faild"
-msgstr "Dler Cloud 登录失败"
-
 msgid "Login Account"
 msgstr "登录账号"
-
-msgid "Dler Cloud Logout Successful"
-msgstr "Dler Cloud 已成功退出"
-
-msgid "Dler Cloud Logout Faild"
-msgstr "Dler Cloud 退出失败"
 
 msgid "Logout Account"
 msgstr "退出账号"

@@ -37,11 +37,6 @@ function index()
 	entry({"admin", "services", "openclash", "one_key_update_check"}, call("action_one_key_update_check"))
 	entry({"admin", "services", "openclash", "switch_mode"}, call("action_switch_mode"))
 	entry({"admin", "services", "openclash", "op_mode"}, call("action_op_mode"))
-	entry({"admin", "services", "openclash", "dler_info"}, call("action_dler_info"))
-	entry({"admin", "services", "openclash", "dler_checkin"}, call("action_dler_checkin"))
-	entry({"admin", "services", "openclash", "dler_logout"}, call("action_dler_logout"))
-	entry({"admin", "services", "openclash", "dler_login"}, call("action_dler_login"))
-	entry({"admin", "services", "openclash", "dler_login_info_save"}, call("action_dler_login_info_save"))
 	entry({"admin", "services", "openclash", "config_name"}, call("action_config_name"))
 	entry({"admin", "services", "openclash", "switch_config"}, call("action_switch_config"))
 	entry({"admin", "services", "openclash", "toolbar_show"}, call("action_toolbar_show"))
@@ -297,148 +292,6 @@ function action_one_key_update()
   return luci.sys.call("sh /usr/share/openclash/openclash_update.sh 'one_key_update' >/dev/null 2>&1 &")
 end
 
-local function dler_login_info_save()
-	uci:set("openclash", "config", "dler_email", luci.http.formvalue("email"))
-	uci:set("openclash", "config", "dler_passwd", luci.http.formvalue("passwd"))
-	uci:set("openclash", "config", "dler_checkin", luci.http.formvalue("checkin"))
-	uci:set("openclash", "config", "dler_checkin_interval", luci.http.formvalue("interval"))
-	if tonumber(luci.http.formvalue("multiple")) > 50 then
-		uci:set("openclash", "config", "dler_checkin_multiple", "50")
-	elseif tonumber(luci.http.formvalue("multiple")) < 1 or not tonumber(luci.http.formvalue("multiple")) then
-		uci:set("openclash", "config", "dler_checkin_multiple", "1")
-	else
-		uci:set("openclash", "config", "dler_checkin_multiple", luci.http.formvalue("multiple"))
-	end
-	uci:commit("openclash")
-	return "success"
-end
-
-local function dler_login()
-	local info, token, get_sub
-	local sub_path = "/tmp/dler_sub"
-	local email = uci:get("openclash", "config", "dler_email")
-	local passwd = uci:get("openclash", "config", "dler_passwd")
-	if email and passwd then
-		info = luci.sys.exec(string.format("curl -sL -H 'Content-Type: application/json' -d '{\"email\":\"%s\", \"passwd\":\"%s\"}' -X POST https://dler.cloud/api/v1/login", email, passwd))
-		if info then
-			info = json.parse(info)
-		end
-		if info and info.ret == 200 then
-			token = info.data.token
-			uci:set("openclash", "config", "dler_token", token)
-			uci:commit("openclash")
-			get_sub = string.format("curl -sL -H 'Content-Type: application/json' -d '{\"access_token\":\"%s\"}' -X POST https://dler.cloud/api/v1/managed/clash -o %s", token, sub_path)
-			luci.sys.exec(get_sub)
-			return info.ret
-		else
-			uci:delete("openclash", "config", "dler_token")
-			uci:commit("openclash")
-			fs.unlink(sub_path)
-			fs.unlink("/tmp/dler_checkin")
-			fs.unlink("/tmp/dler_info")
-			return "402"
-		end
-	else
-		uci:delete("openclash", "config", "dler_token")
-		uci:commit("openclash")
-		fs.unlink(sub_path)
-		fs.unlink("/tmp/dler_checkin")
-		fs.unlink("/tmp/dler_info")
-		return "402"
-	end
-end
-
-local function dler_logout()
-	local info, token
-	local token = uci:get("openclash", "config", "dler_token")
-	if token then
-		info = luci.sys.exec(string.format("curl -sL -H 'Content-Type: application/json' -d '{\"access_token\":\"%s\"}' -X POST https://dler.cloud/api/v1/logout", token))
-		if info then
-			info = json.parse(info)
-		end
-		if info and info.ret == 200 then
-			uci:delete("openclash", "config", "dler_token")
-			uci:delete("openclash", "config", "dler_checkin")
-			uci:delete("openclash", "config", "dler_checkin_interval")
-			uci:delete("openclash", "config", "dler_checkin_multiple")
-			uci:commit("openclash")
-			fs.unlink("/tmp/dler_sub")
-			fs.unlink("/tmp/dler_checkin")
-			fs.unlink("/tmp/dler_info")
-			return info.ret
-		else
-			return "403"
-		end
-	else
-		return "403"
-	end
-end
-
-local function dler_info()
-	local info, path, get_info
-	local token = uci:get("openclash", "config", "dler_token")
-	local email = uci:get("openclash", "config", "dler_email")
-	local passwd = uci:get("openclash", "config", "dler_passwd")
-	path = "/tmp/dler_info"
-	if token and email and passwd then
-		get_info = string.format("curl -sL -H 'Content-Type: application/json' -d '{\"email\":\"%s\", \"passwd\":\"%s\"}' -X POST https://dler.cloud/api/v1/information -o %s", email, passwd, path)
-		if not nixio.fs.access(path) then
-			luci.sys.exec(get_info)
-		else
-			if fs.readfile(path) == "" or not fs.readfile(path) then
-				luci.sys.exec(get_info)
-			else
-				if (os.time() - fs.mtime(path) > 900) then
-					luci.sys.exec(get_info)
-				end
-			end
-		end
-		info = fs.readfile(path)
-		if info then
-			info = json.parse(info)
-		end
-		if info and info.ret == 200 then
-			return info.data
-		else
-			fs.unlink(path)
-			luci.sys.exec(string.format("echo -e %s Dler Cloud Account Login Failed! Please Check And Try Again... >> /tmp/openclash.log", os.date("%Y-%m-%d %H:%M:%S")))
-			return "error"
-		end
-	else
-		return "error"
-	end
-end
-
-local function dler_checkin()
-	local info
-	local path = "/tmp/dler_checkin"
-	local token = uci:get("openclash", "config", "dler_token")
-	local email = uci:get("openclash", "config", "dler_email")
-	local passwd = uci:get("openclash", "config", "dler_passwd")
-	local multiple = uci:get("openclash", "config", "dler_checkin_multiple") or 1
-	if token and email and passwd then
-		info = luci.sys.exec(string.format("curl -sL -H 'Content-Type: application/json' -d '{\"email\":\"%s\", \"passwd\":\"%s\", \"multiple\":\"%s\"}' -X POST https://dler.cloud/api/v1/checkin", email, passwd, multiple))
-		if info then
-			info = json.parse(info)
-		end
-		if info and info.ret == 200 then
-			fs.unlink("/tmp/dler_info")
-			fs.writefile(path, info)
-			luci.sys.exec(string.format("echo -e %s Dler Cloud Checkin Successful, Result:【%s】 >> /tmp/openclash.log", os.date("%Y-%m-%d %H:%M:%S"), info.data.checkin))
-			return info
-		else
-			if info and info.msg then
-				luci.sys.exec(string.format("echo -e %s Dler Cloud Checkin Failed, Result:【%s】 >> /tmp/openclash.log", os.date("%Y-%m-%d %H:%M:%S"), info.msg))
-			else
-				luci.sys.exec(string.format("echo -e %s Dler Cloud Checkin Failed! Please Check And Try Again... >> /tmp/openclash.log",os.date("%Y-%m-%d %H:%M:%S")))
-			end
-			return info
-		end
-	else
-		return "error"
-	end
-end
-
 local function config_name()
 	local e,a={}
 	for t,o in ipairs(fs.glob("/etc/openclash/config/*"))do
@@ -573,40 +426,6 @@ function action_save_corever()
 	})
 end
 
-function action_dler_login_info_save()
-	luci.http.prepare_content("application/json")
-	luci.http.write_json({
-		dler_login_info_save = dler_login_info_save();
-	})
-end
-
-function action_dler_info()
-	luci.http.prepare_content("application/json")
-	luci.http.write_json({
-		dler_info = dler_info();
-	})
-end
-
-function action_dler_checkin()
-	luci.http.prepare_content("application/json")
-	luci.http.write_json({
-		dler_checkin = dler_checkin();
-	})
-end
-
-function action_dler_logout()
-	luci.http.prepare_content("application/json")
-	luci.http.write_json({
-		dler_logout = dler_logout();
-	})
-end
-
-function action_dler_login()
-	luci.http.prepare_content("application/json")
-	luci.http.write_json({
-		dler_login = dler_login();
-	})
-end
 
 function action_one_key_update_check()
 	luci.sys.call("rm -rf /tmp/*_last_version 2>/dev/null")
