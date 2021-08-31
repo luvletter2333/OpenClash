@@ -27,6 +27,15 @@
 - 感谢<a href="https://github.com/frainzy1477" target="_blank"> frainzy1477 </a>，本插件基于<a href="https://github.com/frainzy1477/luci-app-clash" target="_blank"> Luci For Clash </a>进行二次开发 -
 </p>
 
+# NOTICE
+
+This is a modification of OpenClash by luvletter2333 because of my preferences and requirements.
+
+You are welcome to use this version, but you should also know **there is no DaaS** and I have no responsibility to help you debug.
+
+I will try my best to list all changes and its commits here.
+
+
 使用手册
 ---
 
