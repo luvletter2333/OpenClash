@@ -83,11 +83,12 @@ if not Value.key?('dns') then
 else
    Value['dns']['enable']=true
 end;
-if $8 == 1 then
+# Enable Core IPv6 By Default
+#if $8 == 1 then
    Value['ipv6']=true
-else
-   Value['ipv6']=false
-end;
+#else
+#   Value['ipv6']=false
+#end;
 if ${21} == 1 then
    Value['dns']['ipv6']=true
 else
