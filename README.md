@@ -80,7 +80,7 @@ cd OpenWrt-SDK-ar71xx-*
 mkdir package/luci-app-openclash
 cd package/luci-app-openclash
 git init
-git remote add -f origin https://github.com/vernesong/OpenClash.git
+git remote add -f origin https://github.com/luvletter2333/OpenClash.git
 git config core.sparsecheckout true
 echo "luci-app-openclash" >> .git/info/sparse-checkout
 git pull --depth 1 origin master
