@@ -35,6 +35,10 @@ You are welcome to use this version, but you should also know **there is no DaaS
 
 I will try my best to list all changes and its commits here.
 
+## Change logs
+
+- Remove Credit and Dler : 6f7e191 & b47a2de
+- Enable Core IPv6 by default : 6d02e257
 
 使用手册
 ---
