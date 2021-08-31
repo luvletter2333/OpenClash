@@ -124,10 +124,6 @@ o.write = function()
   SYS.call("/etc/init.d/openclash stop >/dev/null 2>&1 &")
 end
 
-d = Map("openclash")
-d.title = translate("Credits")
-d.pageaction = false
-d:section(SimpleSection).template  = "openclash/developer"
 
 
 m:append(Template("openclash/toolbar_show"))
